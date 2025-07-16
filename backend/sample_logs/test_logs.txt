@@ -1,0 +1,5 @@
+[2025-07-15 18:44:01] ERROR: Connection to database failed on port 5432
+[2025-07-15 18:44:02] INFO: Retrying connection...
+[2025-07-15 18:44:05] ERROR: Connection timeout. Could not connect to Postgres
+[2025-07-15 18:45:00] WARNING: Fallback mechanism initiated
+[2025-07-15 18:46:00] RESOLVED: Switched to replica node and restored service
