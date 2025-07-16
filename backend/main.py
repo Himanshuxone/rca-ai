@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 import uuid, os
-import openai
+# from openai import OpenAI
 
 from database import get_db, engine
 from models import Base, User, Incident, RCASummary
@@ -19,24 +19,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Utility Functions
 def extract_text(file: UploadFile) -> str:
     return file.file.read().decode("utf-8")
 
 def generate_summary(log_text: str) -> str:
-    prompt = f"""
-    You are an SRE Assistant. Read the following incident log and summarize the root cause and mitigation steps.
-
-    Log:
-    {log_text[:4000]}
-    """
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
+    # Simulated AI summary for local testing without OpenAI
+    return (
+        "🚨 **Simulated RCA Summary**\n\n"
+        "- Root cause: Database connection timeout detected in logs.\n"
+        "- Affected service: PostgreSQL on port 5432\n"
+        "- Mitigation: Switched to replica node and restored service\n"
+        "- Next steps: Investigate primary node health and HA failover config\n"
+        f"\n\n📝 (Preview of uploaded log:)\n{log_text[:250]}..."
     )
-    return response.choices[0].message.content.strip()
+    
+    # prompt = f"""
+    # You are an SRE Assistant. Read the following incident log and summarize the root cause and mitigation steps.
+
+    # Log:
+    # {log_text[:4000]}
+    # """
+    # response = client.chat.completions.create(
+    #     model="gpt-4",
+    #     messages=[
+    #         {"role": "user", "content": prompt}
+    #     ]
+    # )
+    # return response.choices[0].message.content.strip()
+
 
 # API Endpoints
 @app.post("/analyze")
@@ -45,7 +58,6 @@ async def analyze_log(file: UploadFile = File(...), db: Session = Depends(get_db
         log_text = extract_text(file)
         summary_text = generate_summary(log_text)
 
-        # Create Incident and RCA Summary
         incident = Incident(filename=file.filename)
         db.add(incident)
         db.commit()
@@ -61,7 +73,10 @@ async def analyze_log(file: UploadFile = File(...), db: Session = Depends(get_db
         }
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 
 @app.get("/report/{report_id}")
