@@ -1,9 +1,9 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # dependencies
-frontend/node_modules
-backend/__pycache__
-backend/.venv
+frontend/node_modules/
+backend/__pycache__/
+backend/.venv/
 backend/.env
 
 
