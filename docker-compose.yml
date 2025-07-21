@@ -1,0 +1,48 @@
+version: '3.9'
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - techrca-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:admin123@db:5432/techrca_db
+      - OPENAI_API_KEY=your_openai_key_here
+    networks:
+      - techrca-net
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: techrca
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: techrca_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - techrca-net
+
+networks:
+  techrca-net:
+
+volumes:
+  postgres_data:

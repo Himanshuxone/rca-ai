@@ -3,12 +3,14 @@
 # dependencies
 frontend/node_modules/
 backend/__pycache__/
-backend/.venv/
+backend/.venv/*
+backend/venv
 backend/.env
 
 
 # testing
 frontend/coverage
+frontend/node_modules/.cache/.eslintcache
 
 # production
 frontend/build

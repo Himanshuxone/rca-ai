@@ -1,14 +1,22 @@
 from fastapi import FastAPI, File, UploadFile, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from models import FlowLog, RCAEvent, RCAReport # ✅ Add this
+from sqlalchemy import select  # ✅ THIS LINE IS REQUIRED
+from datetime import datetime
 import uuid, os
 # from openai import OpenAI
 
 from database import get_db, engine
 from models import Base, User, Incident, RCASummary
 
-Base.metadata.create_all(bind=engine)  # Create tables on startup
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 app = FastAPI()
 
@@ -18,6 +26,59 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def test_db_connection():
+    try:
+        async with engine.connect() as conn:
+            await conn.execute("SELECT 1")
+        print("✅ PostgreSQL connected successfully.")
+    except Exception as e:
+        print("❌ DB connection failed:", e)
+
+# Healthcheck Route
+@app.get("/health")
+async def health_check():
+    return {"status": "OK"}
+
+# API Route: Get flow logs
+@app.get("/api/flowlogs")
+async def get_flow_logs(db: AsyncSession = Depends(get_db)):
+    try:
+        result = await db.execute(select(FlowLog).order_by(FlowLog.start_time.desc()).limit(100))
+        logs = result.scalars().all()
+        return [
+            {
+                "srcaddr": log.srcaddr,
+                "dstaddr": log.dstaddr,
+                "dstport": log.dstport,
+                "action": log.action,
+                "time": log.start_time.isoformat()
+            }
+            for log in logs
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@app.get("/api/rca-events")
+async def get_rca_events(db=Depends(get_db)):
+    result = await db.execute(select(RCAEvent))
+    events = result.scalars().all()
+    return [dict(
+        summary=e.summary,
+        severity=e.severity,
+        detected_at=e.detected_at.isoformat()
+    ) for e in events]
+
+@app.get("/api/reports")
+async def get_rca_reports(db=Depends(get_db)):
+    result = await db.execute(select(RCAReport))
+    reports = result.scalars().all()
+    return [dict(
+        root_cause=r.root_cause,
+        recommendation=r.recommendation
+    ) for r in reports]
 
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 

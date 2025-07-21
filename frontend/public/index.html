@@ -2,10 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TechRCA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechRCA - Root Cause Analysis Platform</title>
+  <script src="https://cdn.tailwindcss.com">
+document.addEventListener("DOMContentLoaded", () => {
+  loadFlowLogs();
+  loadRCAEvents();
+  loadRCAReports();
+});
+
+function loadFlowLogs() {
+  fetch('/api/flowlogs')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('flowlogs-list');
+      data.forEach(log => {
+        container.innerHTML += `
+          <li class="border-b py-2 text-sm">
+            ${log.srcaddr} ➡️ ${log.dstaddr} | Port: ${log.dstport} | Action: <span class="font-bold">${log.action}</span>
+          </li>
+        `;
+      });
+    });
+}
+
+function loadRCAEvents() {
+  fetch('/api/rca-events')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('rca-list');
+      data.forEach(event => {
+        container.innerHTML += `
+          <li class="mb-2 text-sm">
+            [${event.severity.toUpperCase()}] ${event.summary} <span class="text-gray-500">(${event.detected_at})</span>
+          </li>
+        `;
+      });
+    });
+}
+
+function loadRCAReports() {
+  fetch('/api/reports')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('reports-list');
+      data.forEach(report => {
+        container.innerHTML += `
+          <li class="mb-2 text-sm">
+            🕵️ Root Cause: <b>${report.root_cause}</b><br/>
+            ✅ Recommendation: ${report.recommendation}
+          </li>
+        `;
+      });
+    });
+}
+  </script>
 </head>
-<body class="bg-gray-900 text-white">
-  <div id="root"></div>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="text-2xl font-bold text-blue-600">TechRCA</div>
+      <ul class="flex space-x-6 font-medium text-gray-600">
+        <li><a href="#" class="hover:text-blue-600">Home</a></li>
+        <li><a href="#flowlogs" class="hover:text-blue-600">Flow Logs</a></li>
+        <li><a href="#rca" class="hover:text-blue-600">RCA Events</a></li>
+        <li><a href="#reports" class="hover:text-blue-600">Reports</a></li>
+        <li><a href="#dashboard" class="hover:text-blue-600">Dashboard</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="text-center py-20 bg-gradient-to-r from-blue-50 to-blue-100">
+    <h1 class="text-4xl md:text-5xl font-extrabold text-blue-700">Automated Root Cause Analysis for VPC Flow Logs</h1>
+    <p class="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+      TechRCA analyzes VPC flow logs, detects anomalies, and generates real-time RCA reports to help you fix issues faster.
+    </p>
+    <div class="mt-8">
+      <a href="#dashboard" class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition">View Dashboard</a>
+    </div>
+  </section>
+
+  <!-- Tabs Preview Sections (Just samples) -->
+  <section id="flowlogs" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">📊 Flow Logs</h2>
+    <p class="text-gray-600 mb-6">Real-time ingestion and visualization of AWS VPC flow log data.</p>
+    <ul id="flowlogs-list" class="list-disc ml-6 text-gray-700"></ul>
+    <!-- Add log samples or charts here -->
+  </section>
+
+  <section id="rca" class="max-w-6xl mx-auto px-4 py-12 bg-white shadow-sm rounded-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">⚠️ RCA Events</h2>
+    <p class="text-gray-600 mb-6">View automatically detected root causes based on traffic anomalies.</p>
+    <ul id="rca-list" class="list-disc ml-6 text-gray-700"></ul>
+  </section>
+
+  <section id="reports" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">📄 RCA Reports</h2>
+    <p class="text-gray-600 mb-6">Detailed diagnostics with root causes, evidence, and actionable recommendations.</p>
+    <ul id="reports-list" class="list-disc ml-6 text-gray-700"></ul>
+  </section>
+
+  <section id="dashboard" class="max-w-6xl mx-auto px-4 py-12 bg-white shadow-sm rounded-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">📈 Dashboard</h2>
+    <p class="text-gray-600 mb-6">Interactive visualization and alert monitoring powered by Grafana.</p>
+    <a href="http://localhost:3000" target="_blank" class="text-blue-600 underline">Open Grafana Dashboard</a>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 text-gray-500 text-sm">
+    © 2025 TechRCA. All rights reserved.
+  </footer>
+
 </body>
 </html>

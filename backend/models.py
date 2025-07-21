@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, relationship
 import uuid
@@ -38,3 +38,25 @@ class RCASummary(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     incident = relationship("Incident", back_populates="summary")
+
+class FlowLog(Base):
+    __tablename__ = 'flow_logs'
+    id = Column(Integer, primary_key=True, index=True)
+    srcaddr = Column(String)
+    dstaddr = Column(String)
+    dstport = Column(Integer)
+    action = Column(String)
+    start_time = Column(DateTime)
+
+class RCAEvent(Base):
+    __tablename__ = 'rca_events'
+    id = Column(Integer, primary_key=True, index=True)
+    summary = Column(String)
+    severity = Column(String)
+    detected_at = Column(DateTime)
+
+class RCAReport(Base):
+    __tablename__ = 'rca_reports'
+    id = Column(Integer, primary_key=True, index=True)
+    root_cause = Column(String)
+    recommendation = Column(String)
