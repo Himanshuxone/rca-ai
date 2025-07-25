@@ -1,10 +1,35 @@
-import React from 'react';
+// src/pages/Dashboard.jsx
+import React, { useEffect, useState } from "react";
+import { fetchRcaSummary } from "../services/api";
+import ChartComponent from "../components/ChartComponent";
 
-export default function RCAReports() {
+const RCAReports = () => {
+    const [summary, setSummary] = useState(null);
+  
+    useEffect(() => {
+      const loadData = async () => {
+        try {
+          const data = await fetchRcaSummary();
+          setSummary(data);
+        } catch (error) {
+          console.error("Dashboard API Error:", error.message);
+        }
+      };
+      loadData();
+    }, []);
   return (
     <div>
-      <h2>RCA Reports</h2>
-      <p>Upload logs, view analysis, and manage results.</p>
+      <h2>RCAReports</h2>
+      {summary ? (
+        <div>
+          <p>Total RCAs: {summary.total}</p>
+          <ChartComponent data={summary.chartData} />
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
-}
+};
+
+export default RCAReports

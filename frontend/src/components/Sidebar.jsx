@@ -15,6 +15,9 @@ export default function Sidebar() {
         <li className="nav-item">
           <Link to="/reports" className="nav-link text-white">RCA Reports</Link>
         </li>
+        <li className="nav-item">
+          <Link to="/events" className="nav-link text-white">Events</Link>
+        </li>
       </ul>
     </div>
   );
