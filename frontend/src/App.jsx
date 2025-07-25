@@ -1,23 +1,30 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Home from './pages/Home';
-import Report from './pages/Report';
-import UploadRCA from './components/UploadRCA';
-import DarkModeToggle from './components/DarkModeToggle';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import RCAReports from "./pages/RCAReports";
+import NotFound from "./pages/NotFound";
 
-export default function App() {
+const App = () => {
   return (
-    <Router>
-      <div className="container">
-        <DarkModeToggle />
-        <nav>
-          <Link to="/">Home</Link> | <Link to="/report">View Report</Link>
-        </nav>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/report" element={<Report />} />
-        </Routes>
+    <div className="d-flex">
+      <Sidebar />
+      <div className="flex-grow-1">
+        <Navbar />
+        <main className="p-4">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/reports" element={<RCAReports />} />
+            <Route path="/home" element={<Navigate to="/" />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
       </div>
-    </Router>
+    </div>
   );
-}
+};
+
+export default App;
