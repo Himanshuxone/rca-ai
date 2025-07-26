@@ -1,0 +1,15 @@
+/* src/index.css or App.css */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url('./assets/wallpaper1.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #fff;
+}
+
+main {
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.5);
+  min-height: 100vh;
+  padding: 2rem;
+}

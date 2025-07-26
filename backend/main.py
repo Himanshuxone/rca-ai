@@ -1,11 +1,12 @@
 # File: main.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 import os
+import shutil
 
 app = FastAPI()
 
@@ -23,6 +24,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:admin123@localho
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
+UPLOAD_DIR = "sample_logs"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Models
 class FlowLog(Base):
@@ -96,3 +99,26 @@ def get_report_detail(report_id: int):
             "recommendation": r.recommendation,
             "created_at": r.created_at,
         }
+
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        file_location = os.path.join(UPLOAD_DIR, file.filename)
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        return {"filename": file.filename, "message": "Upload successful.", "ok": "uploaded"}
+    except Exception as e:
+        return {"detail": str(e)}
+
+@app.get("/api/dashboard-data")
+async def get_dashboard_data():
+    # Dummy example — replace with real logic
+    return {
+        "summary": {
+            "total_logs": 14,
+            "errors": 7,
+            "warnings": 3,
+            "info": 4,
+        },
+        "top_components": ["API Gateway", "Lambda", "S3"],
+    }

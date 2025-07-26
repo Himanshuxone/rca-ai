@@ -12,3 +12,9 @@ export const fetchEvents = async () => {
   if (!res.ok) throw new Error("Failed to fetch events");
   return res.json();
 };
+
+export const fetchDashboardData = async () => {
+  const res = await fetch(`${BASE_URL}/api/dashboard-data`);
+  if (!res.ok) throw new Error("Failed to fetch RCA data");
+  return res.json();
+};

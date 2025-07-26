@@ -20,9 +20,10 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h2>Dashboard</h2>
+      <h2>📊 RCA Summary Dashboard</h2>
       {summary ? (
         <div>
+          <div style={styles.cards}></div>
           <p>Total RCAs: {summary.total}</p>
           <ChartComponent data={summary.chartData} />
         </div>
@@ -31,6 +32,24 @@ const Dashboard = () => {
       )}
     </div>
   );
+};
+
+const styles = {
+  cards: {
+    display: "flex",
+    gap: "2rem",
+    margin: "2rem 0",
+    flexWrap: "wrap",
+  },
+  card: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    padding: "1.5rem",
+    borderRadius: "12px",
+    minWidth: "180px",
+    flex: 1,
+    textAlign: "center",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
+  }
 };
 
 export default Dashboard;

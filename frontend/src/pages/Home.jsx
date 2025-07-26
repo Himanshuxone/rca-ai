@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import UploadLogs from "../components/UploadLogs";
+import { fetchDashboardData } from "../services/api";
 
-export default function Home() {
+function Dashboard() {
+  const [data, setData] = useState(null);
+
+  const fetchData = async () => {
+    const res = await fetchDashboardData();
+    setData(res);
+  };
+
+  useEffect(() => {
+    fetchData(); // initial load
+  }, []);
+
   return (
     <div>
-      <h2>Welcome to TechRCA</h2>
-      <p>This is the homepage of the Root Cause Analysis platform.</p>
+      <h1>Dashboard</h1>
+      <UploadLogs onUploadSuccess={fetchData} />
+      {/* render dashboard data below */}
     </div>
   );
 }
+
+export default Dashboard;
