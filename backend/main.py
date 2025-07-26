@@ -106,7 +106,9 @@ async def upload_file(file: UploadFile = File(...)):
         file_location = os.path.join(UPLOAD_DIR, file.filename)
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        return {"filename": file.filename, "message": "Upload successful.", "ok": "uploaded"}
+        # 🔁 Trigger RCA analysis immediately
+        analysis_result = analyze_log_file(file_location)
+        return {"filename": file.filename, "message": "Upload successful.", "ok": "uploaded", "analysis": analysis_result}
     except Exception as e:
         return {"detail": str(e)}
 
@@ -121,4 +123,12 @@ async def get_dashboard_data():
             "info": 4,
         },
         "top_components": ["API Gateway", "Lambda", "S3"],
+    }
+
+def analyze_log_file(filepath):
+    # Example dummy logic
+    return {
+        "root_cause": "Database connection timeout",
+        "component": "DBService",
+        "recommendation": "Increase pool size or retry config"
     }

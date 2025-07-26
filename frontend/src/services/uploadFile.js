@@ -12,7 +12,6 @@ export async function uploadFile(file) {
     }
 
     const data = await response.json();
-    console.log("+++++++++++", data)
     return data;
   } catch (error) {
     console.error("Error uploading file:", error);

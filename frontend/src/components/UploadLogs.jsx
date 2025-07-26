@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { uploadFile } from "../services/uploadFile";
+import RCAResult from "./RCAResult"; // adjust the path as needed
 
 export default function UploadLogs({ onUploadSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -10,6 +11,7 @@ export default function UploadLogs({ onUploadSuccess }) {
   const [filePreview, setFilePreview] = useState("");
   const [structuredLogs, setStructuredLogs] = useState([]);   // to store parsed data
   const [uploadResult, setUploadResult] = useState(null);
+  const [analysis, setAnalysis] = useState(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -64,7 +66,7 @@ export default function UploadLogs({ onUploadSuccess }) {
         setSuccess(true);
         setSelectedFile(null);
         setFilePreview("");
-
+        setAnalysis(response.analysis);  // RCA results
         if (onUploadSuccess) {
           onUploadSuccess();
         }
@@ -72,7 +74,7 @@ export default function UploadLogs({ onUploadSuccess }) {
         setUploadStatus("❌ Upload failed.");
       }
     } catch (error) {
-        console.log("=============", error)
+      console.log("=============", error)
       setUploadStatus("❌ Error uploading file.");
     } finally {
       setLoading(false);
@@ -172,6 +174,10 @@ export default function UploadLogs({ onUploadSuccess }) {
             </div>
             </div>
         )}
+        {/* <div className="rca-card">
+        <h2>🧠 RCA Analysis Summary</h2> */}
+        {analysis && <RCAResult analysis={analysis} />}
+        {/* </div> */}
       </div>
     </div>
   );
