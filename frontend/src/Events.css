@@ -1,0 +1,46 @@
+.badge {
+  padding: 6px 14px;
+  font-weight: bold;
+  border-radius: 9999px;
+  color: white;
+  display: inline-block;
+  font-size: 14px;
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+/* Gradients per action */
+.badge.accept {
+  background-image: linear-gradient(to right, #34d399, #059669, #a7f3d0);
+}
+
+.badge.reject {
+  background-image: linear-gradient(to right, #ef4444, #ec4899, #f97316);
+}
+
+.badge.drop {
+  background-image: linear-gradient(to right, #facc15, #f97316, #ef4444);
+}
+
+.badge.default {
+  background-image: linear-gradient(to right, #9ca3af, #6b7280, #374151);
+}
+
+/* Animation keyframes */
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

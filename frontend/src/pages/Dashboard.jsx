@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { fetchRcaSummary } from "../services/api";
-import ChartComponent from "../components/ChartComponent";
+import ChartPanel from "../components/ChartComponent";
 // import StatCounter from "../components/StatCounter";
 // import StatusBadge from "../components/StatusBadge";
 // import TooltipWrapper from "../components/TooltipWrapper";
@@ -26,9 +26,9 @@ const Dashboard = () => {
       <h2>📊 RCA Summary Dashboard</h2>
       {summary ? (
         <div>
-          <div></div>
+          <div style={styles.cards}></div>
           <p>Total RCAs: <b>{summary.total}</b></p>
-          <ChartComponent data={summary} />
+          <ChartPanel/>
         </div>
       ) : (
         <p>Loading...</p>
@@ -37,22 +37,22 @@ const Dashboard = () => {
   );
 };
 
-// const styles = {
-//   cards: {
-//     display: "flex",
-//     gap: "2rem",
-//     margin: "2rem 0",
-//     flexWrap: "wrap",
-//   },
-//   card: {
-//     backgroundColor: "rgba(255, 255, 255, 0.1)",
-//     padding: "1.5rem",
-//     borderRadius: "12px",
-//     minWidth: "180px",
-//     flex: 1,
-//     textAlign: "center",
-//     boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-//   }
-// };
+const styles = {
+  cards: {
+    display: "flex",
+    gap: "2rem",
+    margin: "2rem 0",
+    flexWrap: "wrap",
+  },
+  card: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    padding: "1.5rem",
+    borderRadius: "12px",
+    minWidth: "180px",
+    flex: 1,
+    textAlign: "center",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
+  }
+};
 
 export default Dashboard;

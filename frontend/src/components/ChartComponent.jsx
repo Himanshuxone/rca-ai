@@ -1,86 +1,92 @@
+import React, { useEffect, useState } from "react";
+import { Bar, Pie } from "react-chartjs-2";
+import { fetchLogSummary } from "../services/api";
+import ToggleSwitch from "../components/ToggleSwitch"; // path may vary
 import {
   Chart as ChartJS,
+  BarElement,
+  ArcElement,
   CategoryScale,
   LinearScale,
-  BarElement,
-  Title,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-import { Bar } from 'react-chartjs-2';
-import React, { useEffect, useState } from "react";
-import { fetchLogSummary } from "../services/api";
+const ChartToggle = () => {
+  const [chartData, setChartData] = useState(null);
+  const [view, setView] = useState("bar"); // Toggle state
 
-const options = {
-  responsive: true,
-  plugins: {
-    legend: { position: 'top' },
-    title: { display: true, text: 'Monthly RCA Trends' },
-  },
-};
-
-const ChartComponent = (summary) => {
-  const [data, setData] = useState(null);
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
         const result = await fetchLogSummary();
-        const formattedData = {
-          labels: ['Low', 'Medium', 'High'],
+        const data = {
+          labels: ["Low", "Medium", "High"],
           datasets: [
             {
-              label: 'RCA Count',
+              label: "RCA Count",
               data: [result.low, result.medium, result.high],
-              backgroundColor: [
-                'rgba(54, 162, 235, 0.6)',
-                'rgba(255, 206, 86, 0.6)',
-                'rgba(255, 99, 132, 0.6)'
-              ]
-            }
-        ]}
-        setData(formattedData);
-      } catch (error) {
-        console.error("API failed, using fallback data", error);
-        setData({
-          labels: ['Low', 'Medium', 'High'],
-          datasets: [
-            {
-              label: 'RCA Count (Fallback)',
-              data: [2, 5, 7],
-              backgroundColor: [
-                'rgba(54, 162, 235, 0.6)',
-                'rgba(255, 206, 86, 0.6)',
-                'rgba(255, 99, 132, 0.6)'
-              ],
-              borderColor: '#333',
+              backgroundColor: ["#3b82f6", "#facc15", "#ef4444"],
+              borderColor: "rgba(255,255,255,0.2)",
               borderWidth: 1,
             },
           ],
-        });      
+        };
+        setChartData(data);
+      } catch (err) {
+        console.error("Chart data fetch failed", err);
       }
-    }; fetchData(); // initial load
+    };
+
+    loadData();
   }, []);
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: view === "bar" ? "top" : "bottom", labels: { color: "#fff" } },
+      tooltip: { enabled: true },
+    },
+    scales:
+      view === "bar"
+        ? {
+            x: { ticks: { color: "#fff" } },
+            y: { beginAtZero: true, ticks: { color: "#fff" } },
+          }
+        : {},
+  };
+
   return (
-    <div className="p-4 bg-gray-900 rounded-xl shadow-lg w-full md:w-1/2">
-      <h3 className="text-white text-lg font-semibold mb-4 text-center">RCA Severity Breakdown</h3>
-      {data ? (
-        <Bar data={data} options={options} />
+    <div className="bg-gray-900 rounded-xl shadow border border-gray-700 p-4 max-w-xl mx-auto">
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-white font-semibold text-md">RCA Risk Chart</h3>
+        <ToggleSwitch
+          checked={view === "pie"}
+          onChange={() => setView(view === "bar" ? "pie" : "bar")}
+          leftLabel="Bar"
+          rightLabel="Pie"
+        />
+      </div>
+
+      {chartData ? (
+        <div className="flex items-center gap-2">
+          {view === "bar" ? (
+            <div className="w-3/4">
+              <Bar data={chartData} options={chartOptions} />
+            </div>
+          ) : (
+            <div className="w-1/3">
+              <Pie data={chartData} options={chartOptions} />
+            </div>
+          )}
+        </div>
       ) : (
-        <p className="text-center text-gray-400">Loading chart...</p>
+        <p className="text-gray-400">Loading chart...</p>
       )}
     </div>
   );
 };
 
-export default ChartComponent;
-
+export default ChartToggle;

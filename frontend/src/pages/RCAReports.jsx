@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import { fetchRcaSummary } from "../services/api";
-import ChartComponent from "../components/ChartComponent";
+import ChartPanel from "../components/ChartComponent";
 
 const RCAReports = () => {
     const [summary, setSummary] = useState(null);
@@ -23,7 +23,7 @@ const RCAReports = () => {
       {summary ? (
         <div>
           <p>Total RCAs: {summary.total}</p>
-          <ChartComponent data={summary.chartData} />
+          <ChartPanel data={summary.chartData} />
         </div>
       ) : (
         <p>Loading...</p>
