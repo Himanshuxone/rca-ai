@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import UploadLogs from "../components/UploadLogs";
 import { fetchDashboardData } from "../services/api";
+import PieChartComponent from "../components/PieChartComponent";
+import FlowDiagram from "../components/FlowDiagram";
 
 function Dashboard() {
   const [data, setData] = useState(null);
@@ -19,6 +21,8 @@ function Dashboard() {
       <h1>Dashboard</h1>
       <UploadLogs onUploadSuccess={fetchData} />
       {/* render dashboard data below */}
+      <PieChartComponent title="Log Distribution" />
+      <FlowDiagram />
     </div>
   );
 }

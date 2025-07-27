@@ -18,3 +18,11 @@ export const fetchDashboardData = async () => {
   if (!res.ok) throw new Error("Failed to fetch RCA data");
   return res.json();
 };
+
+
+export const fetchLogSummary = async () => {
+  const res = await fetch(`${BASE_URL}/api/log-summary`);
+  if (!res.ok) throw new Error("Failed to fetch RCA data");
+  return res.json();
+};
+

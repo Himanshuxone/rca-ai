@@ -74,7 +74,6 @@ export default function UploadLogs({ onUploadSuccess }) {
         setUploadStatus("❌ Upload failed.");
       }
     } catch (error) {
-      console.log("=============", error)
       setUploadStatus("❌ Error uploading file.");
     } finally {
       setLoading(false);

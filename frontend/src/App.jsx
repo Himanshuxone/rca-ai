@@ -11,7 +11,6 @@ import NotFound from "./pages/NotFound";
 const App = () => {
   return (
     <div className="d-flex">
-      <Sidebar />
       <div className="flex-grow-1">
         <Navbar />
         <main className="p-4">

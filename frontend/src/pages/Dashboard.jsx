@@ -2,10 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { fetchRcaSummary } from "../services/api";
 import ChartComponent from "../components/ChartComponent";
+// import StatCounter from "../components/StatCounter";
+// import StatusBadge from "../components/StatusBadge";
+// import TooltipWrapper from "../components/TooltipWrapper";
+import { AlertTriangle, Info, ShieldAlert } from "lucide-react";
 
 const Dashboard = () => {
   const [summary, setSummary] = useState(null);
-
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -24,8 +27,8 @@ const Dashboard = () => {
       {summary ? (
         <div>
           <div style={styles.cards}></div>
-          <p>Total RCAs: {summary.total}</p>
-          <ChartComponent data={summary.chartData} />
+          <p>Total RCAs: <b>{summary.total}</b></p>
+          <ChartComponent data={summary} />
         </div>
       ) : (
         <p>Loading...</p>

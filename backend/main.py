@@ -6,7 +6,14 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
 import os
+import sys
 import shutil
+
+# Add project root to Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from db import get_db_connection  # your existing DB utility
+from rca_report_stats import RCAReportStats
 
 app = FastAPI()
 
@@ -46,6 +53,7 @@ class RCAReport(Base):
     id = Column(Integer, primary_key=True, index=True)
     rca_event_id = Column(Integer)
     root_cause = Column(String)
+    rca_type = Column(String)
     recommendation = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -80,6 +88,7 @@ def get_rca_reports():
                 "id": r.id,
                 "rca_event_id": r.rca_event_id,
                 "root_cause": r.root_cause,
+                "rca_type" : r.rca_type,
                 "recommendation": r.recommendation,
                 "created_at": r.created_at,
             }
@@ -126,9 +135,34 @@ async def get_dashboard_data():
     }
 
 def analyze_log_file(filepath):
-    # Example dummy logic
-    return {
-        "root_cause": "Database connection timeout",
-        "component": "DBService",
-        "recommendation": "Increase pool size or retry config"
+    # Example logic (add actual logic based on error analysis)
+    result = {
+        "root_cause": "Database crash due to out-of-memory",
+        "component": "MemoryManager",
+        "recommendation": "Increase heap size or add memory monitoring",
+        "severity": "critical"
     }
+
+    if "crash" in result["root_cause"].lower():
+        result["severity"] = "critical"
+    elif "timeout" in result["root_cause"].lower():
+        result["severity"] = "warning"
+    else:
+        result["severity"] = "info"
+    return result
+
+@app.get("/api/log-summary")
+def get_log_summary():
+    """ Retrieve data from the vendors table """
+    try:
+        conn = get_db_connection()
+        stats = RCAReportStats(conn)
+        # Execute and print RCA type counts
+        rca_counts = stats.get_rca_type_counts()
+        for risk, count in rca_counts.items():
+            print(f"{risk}: {count}")
+        conn.close()
+        return rca_counts.items()
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    # Dummy example — replace with real logic
