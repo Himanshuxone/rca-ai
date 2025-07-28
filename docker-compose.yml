@@ -1,48 +1,44 @@
-version: '3.9'
+version: "3.9"
 services:
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    build: ./frontend
+    container_name: rca-ai-frontend
     ports:
       - "3000:80"
     depends_on:
       - backend
     networks:
-      - techrca-net
+      - rca-net
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    volumes:
-      - ./backend:/app
+    build: ./backend
+    container_name: rca-ai-backend
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:admin123@db:5432/techrca
     depends_on:
       - db
-    environment:
-      - DATABASE_URL=postgresql://postgres:admin123@db:5432/techrca_db
-      - OPENAI_API_KEY=your_openai_key_here
     networks:
-      - techrca-net
+      - rca-net
 
   db:
-    image: postgres:15-alpine
+    image: postgres:15
     restart: always
-    environment:
-      POSTGRES_USER: techrca
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: techrca_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - techrca-net
-
-networks:
-  techrca-net:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: techrca
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
+
+networks:
+  rca-net:

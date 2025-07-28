@@ -1,22 +1,22 @@
 # File: main.py
 from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Select
+from sqlalchemy.orm import declarative_base
 from datetime import datetime
 import os
+import asyncio
 import sys
 import shutil
 
 # Add project root to Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from db import get_db_connection  # your existing DB utility
 from rca_report_stats import RCAReportStats
 
 app = FastAPI()
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # CORS for frontend
 app.add_middleware(
     CORSMiddleware,
@@ -27,13 +27,9 @@ app.add_middleware(
 )
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:admin123@localhost:5432/techrca")
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
-Base = declarative_base()
 UPLOAD_DIR = "sample_logs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
+Base = declarative_base()
 # Models
 class FlowLog(Base):
     __tablename__ = 'flow_logs'
@@ -57,13 +53,11 @@ class RCAReport(Base):
     recommendation = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-Base.metadata.create_all(bind=engine)
-
 # API endpoints
 @app.get("/api/rca-events")
-def get_rca_events():
-    with SessionLocal() as db:
-        events = db.execute(select(FlowLog)).scalars().all()
+async def get_rca_events():
+    async with async_session() as db:
+        events = await db.execute(select(FlowLog)).scalars().all()
         return [
             {
                 "id": e.id,
@@ -80,8 +74,8 @@ def get_rca_events():
         ]
 
 @app.get("/api/rca-reports")
-def get_rca_reports():
-    with SessionLocal() as db:
+async def get_rca_reports():
+    async with async_session() as db:
         reports = db.execute(select(RCAReport)).scalars().all()
         return [
             {
@@ -96,8 +90,8 @@ def get_rca_reports():
         ]
 
 @app.get("/api/rca-reports/{report_id}")
-def get_report_detail(report_id: int):
-    with SessionLocal() as db:
+async def get_report_detail(report_id: int):
+    async with async_session() as db:
         report = db.get(RCAReport, report_id)
         if not report:
             raise HTTPException(status_code=404, detail="Report not found")

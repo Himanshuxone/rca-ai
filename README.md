@@ -114,4 +114,7 @@ From the backend run create_tables.py
 python create_tables.py
 ```
 
-
+### Stopping all containers
+docker-compose down
+docker container prune -f
+docker network prune -f

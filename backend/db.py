@@ -5,6 +5,6 @@ def get_db_connection():
         dbname="techrca",
         user="postgres",
         password="admin123",
-        host="localhost",
+        host="db",
         port=5432
     )
