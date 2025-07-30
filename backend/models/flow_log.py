@@ -1,10 +1,10 @@
 # models/flow_log.py
-from sqlalchemy import Column, Integer, String
-from init_db import Base
+from sqlalchemy import Column, Integer, String, DateTime, select, Text
+from datetime import datetime
+from db_base import Base  # ✅ import Base from new location
 
 class FlowLog(Base):
     __tablename__ = 'flow_logs'
-    id = Column(Integer, primary_key=True, index=True)
     id = Column(Integer, primary_key=True, index=True)
     srcaddr = Column(String, nullable=False)
     dstaddr = Column(String, nullable=False)

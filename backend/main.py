@@ -2,10 +2,11 @@
 from fastapi import FastAPI, HTTPException, File, UploadFile, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import Column, Integer, String, DateTime, select, Text
-from sqlalchemy.ext.asyncio import AsyncSession
 from init_db import init_db, async_session, Base  # ✅ Correct import
 from datetime import datetime
 from rca_report_stats import RCAReportStats
+from models.flow_log import FlowLog  # ✅ make sure this file contains your SQLAlchemy models
+from models.rca_reports import RCAReports  # ✅ make sure this file contains your SQLAlchemy models
 import os
 import sys
 import shutil
@@ -28,30 +29,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.on_event("startup")
 async def startup_event():
-    await init_db()  # ✅ Ensure DB tables are created at startup
-
-# Define database models
-class FlowLog(Base):
-    __tablename__ = 'flow_logs'
-    id = Column(Integer, primary_key=True, index=True)
-    srcaddr = Column(String)
-    dstaddr = Column(String)
-    srcport = Column(Integer)
-    dstport = Column(Integer)
-    protocol = Column(String)
-    action = Column(String)
-    log_status = Column(String)
-    version = Column(String)
-    start_time = Column(DateTime, default=datetime.utcnow)
-
-class RCAReport(Base):
-    __tablename__ = 'rca_reports'
-    id = Column(Integer, primary_key=True, index=True)
-    rca_event_id = Column(Integer)
-    root_cause = Column(String)
-    rca_type = Column(String)
-    recommendation = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    await init_db(5,3)  # ✅ Ensure DB tables are created at startup
+    print("Initialising all the tables")
 
 # API endpoints
 @app.get("/api/rca-events")
@@ -84,17 +63,7 @@ async def get_rca_reports():
         async with async_session() as db:
             result = await db.execute(select(RCAReport))
             reports = result.scalars().all()
-            return [
-                {
-                    "id": r.id,
-                    "rca_event_id": r.rca_event_id,
-                    "root_cause": r.root_cause,
-                    "rca_type": r.rca_type,
-                    "recommendation": r.recommendation,
-                    "created_at": r.created_at,
-                }
-                for r in reports
-            ]
+            return {"events": [e.__dict__ for e in reports]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

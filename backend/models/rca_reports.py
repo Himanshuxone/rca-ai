@@ -1,8 +1,9 @@
 # models/flow_log.py
-from sqlalchemy import Column, Integer, String
-from init_db import Base
+from sqlalchemy import Column, Integer, String, DateTime, select, Text
+from datetime import datetime
+from db_base import Base  # ✅ import Base from new location
 
-class FlowLog(Base):
+class RCAReports(Base):
     __tablename__ = 'rca_reports'
     id = Column(Integer, primary_key=True, index=True)
     rca_event_id = Column(Integer, nullable=False)
