@@ -1,6 +1,8 @@
 # init_db.py
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
 import asyncio
 import os
 import traceback
@@ -23,3 +25,21 @@ async def init_db(max_retries=10, delay=3):
             traceback.print_exc()
             await asyncio.sleep(delay)
     raise RuntimeError("❌ Could not connect to the database after several retries.")
+
+# ✅ Only test DB connection
+async def test_connection():
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        print("✅ Database connection successful.")
+    except OperationalError as e:
+        print(f"❌ OperationalError: {e}")
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        traceback.print_exc()
+
+# Run the desired function when this script is executed directly
+if __name__ == "__main__":
+    asyncio.run(test_connection())
+    # initialize tables:
+    # asyncio.run(init_db())

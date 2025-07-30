@@ -56,54 +56,65 @@ class RCAReport(Base):
 # API endpoints
 @app.get("/api/rca-events")
 async def get_rca_events():
-    async with async_session() as db:
-        events = await db.execute(select(FlowLog)).scalars().all()
-        return [
-            {
-                "id": e.id,
-                "srcaddr": e.srcaddr,
-                "dstaddr": e.dstaddr,
-                "srcport": e.srcport,
-                "dstport": e.dstport,
-                "protocol": e.protocol,
-                "action": e.action,
-                "log_status": e.log_status,
-                "start_time": e.start_time,
-            }
-            for e in events
-        ]
+    try:
+        async with async_session() as db:
+            result = await db.execute(select(FlowLog))
+            events = result.scalars().all()
+            print(events)
+            return [
+                {
+                    "id": e.id,
+                    "srcaddr": e.srcaddr,
+                    "dstaddr": e.dstaddr,
+                    "srcport": e.srcport,
+                    "dstport": e.dstport,
+                    "protocol": e.protocol,
+                    "action": e.action,
+                    "log_status": e.log_status,
+                    "start_time": e.start_time,
+                }
+                for e in events
+            ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/rca-reports")
 async def get_rca_reports():
-    async with async_session() as db:
-        result = await db.execute(select(RCAReport))
-        reports = result.scalars().all()
-        return [
-            {
-                "id": r.id,
-                "rca_event_id": r.rca_event_id,
-                "root_cause": r.root_cause,
-                "rca_type": r.rca_type,
-                "recommendation": r.recommendation,
-                "created_at": r.created_at,
-            }
-            for r in reports
-        ]
+    try:
+        async with async_session() as db:
+            result = await db.execute(select(RCAReport))
+            reports = result.scalars().all()
+            return [
+                {
+                    "id": r.id,
+                    "rca_event_id": r.rca_event_id,
+                    "root_cause": r.root_cause,
+                    "rca_type": r.rca_type,
+                    "recommendation": r.recommendation,
+                    "created_at": r.created_at,
+                }
+                for r in reports
+            ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/rca-reports/{report_id}")
 async def get_report_detail(report_id: int):
-    async with async_session() as db:
-        report = await db.get(RCAReport, report_id)
-        if not report:
-            raise HTTPException(status_code=404, detail="Report not found")
-        return {
-            "id": report.id,
-            "rca_event_id": report.rca_event_id,
-            "root_cause": report.root_cause,
-            "rca_type": report.rca_type,
-            "recommendation": report.recommendation,
-            "created_at": report.created_at,
-        }
+    try:
+        async with async_session() as db:
+            report = await db.get(RCAReport, report_id)
+            if not report:
+                raise HTTPException(status_code=404, detail="Report not found")
+            return {
+                "id": report.id,
+                "rca_event_id": report.rca_event_id,
+                "root_cause": report.root_cause,
+                "rca_type": report.rca_type,
+                "recommendation": report.recommendation,
+                "created_at": report.created_at,
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):

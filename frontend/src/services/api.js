@@ -8,8 +8,10 @@ export const fetchRcaSummary = async () => {
 };
 
 export const fetchEvents = async () => {
+  alert("==================")
   const res = await fetch(`${BASE_URL}/api/rca-events`);
   if (!res.ok) throw new Error("Failed to fetch events");
+  console.log(">>>>>>>>>>>>>>>>>", res.json())
   return res.json();
 };
 
