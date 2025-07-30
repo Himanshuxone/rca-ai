@@ -115,6 +115,13 @@ python create_tables.py
 ```
 
 ### Stopping all containers
-docker-compose down
+docker-compose down -v
 docker container prune -f
 docker network prune -f
+docker-compose up --build
+Restart the services:
+docker-compose up -d
+
+### Killing a container
+sudo systemctl restart docker.socket docker.service
+sudo docker image rm -f $(sudo docker image ls -q)

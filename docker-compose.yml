@@ -1,5 +1,37 @@
 version: "3.9"
+
 services:
+  db:
+    image: postgres:15
+    container_name: rca-ai-db
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: techrca
+    networks:
+      - rca-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: rca-ai-backend
+    ports:
+      - "8000:8000"  # Change to "8080:8000" if host port 8000 is in use
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:admin123@db:5432/techrca
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - rca-net
+
   frontend:
     build: ./frontend
     container_name: rca-ai-frontend
@@ -10,35 +42,9 @@ services:
     networks:
       - rca-net
 
-  backend:
-    build: ./backend
-    container_name: rca-ai-backend
-    ports:
-      - "8000:8000"
-    environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:admin123@db:5432/techrca
-    depends_on:
-      - db
-    networks:
-      - rca-net
-
-  db:
-    image: postgres:15
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: techrca
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   postgres_data:
 
 networks:
   rca-net:
+    driver: bridge

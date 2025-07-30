@@ -18,7 +18,7 @@ RUN apk update && apk add --no-cache \
 
 # Copy requirements and install
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install --prefix=/usr/local -r requirements.txt
+RUN pip install --prefix=/usr/local -r requirements.txt
 
 # Copy app code
 COPY . .
