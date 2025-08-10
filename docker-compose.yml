@@ -26,6 +26,7 @@ services:
       - "8000:8000"  # Change to "8080:8000" if host port 8000 is in use
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:admin123@db:5432/techrca
+      ENV: dev
     depends_on:
       db:
         condition: service_healthy

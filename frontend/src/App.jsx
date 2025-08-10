@@ -16,7 +16,7 @@ const App = () => {
         <main className="p-4">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Home />} />
             <Route path="/reports" element={<RCAReports />} />
             <Route path="/events" element={<Events />} />
             <Route path="/home" element={<Navigate to="/" />} />

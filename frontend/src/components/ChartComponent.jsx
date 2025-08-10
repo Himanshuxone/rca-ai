@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Bar, Pie } from "react-chartjs-2";
-import { fetchLogSummary } from "../services/api";
+import { fetchRCASummary } from "../services/api";
 import ToggleSwitch from "../components/ToggleSwitch"; // path may vary
 import {
   Chart as ChartJS,
@@ -21,13 +21,17 @@ const ChartToggle = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const result = await fetchLogSummary();
+        const result = await fetchRCASummary();
+        let chartSummary = {}
+        result.summary.forEach(element => {
+          chartSummary[element.label] = element.count
+        });
         const data = {
           labels: ["Low", "Medium", "High"],
           datasets: [
             {
               label: "RCA Count",
-              data: [result.low, result.medium, result.high],
+              data: [chartSummary.low, chartSummary.medium, chartSummary.high],
               backgroundColor: ["#3b82f6", "#facc15", "#ef4444"],
               borderColor: "rgba(255,255,255,0.2)",
               borderWidth: 1,
@@ -39,7 +43,6 @@ const ChartToggle = () => {
         console.error("Chart data fetch failed", err);
       }
     };
-
     loadData();
   }, []);
 

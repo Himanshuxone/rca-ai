@@ -1,15 +1,17 @@
 # File: main.py
 from fastapi import FastAPI, HTTPException, File, UploadFile, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import Column, Integer, String, DateTime, select, Text
-from init_db import init_db, async_session, Base  # ✅ Correct import
+from sqlalchemy import Column, Integer, String, DateTime, select, Text, func
+from init_db import init_db, async_session, Base, populate_dummy_data  # ✅ Correct import
 from datetime import datetime
 from rca_report_stats import RCAReportStats
+from utils.models_utils import model_to_dict_recursive
 from models.flow_log import FlowLog  # ✅ make sure this file contains your SQLAlchemy models
 from models.rca_reports import RCAReports  # ✅ make sure this file contains your SQLAlchemy models
 import os
 import sys
 import shutil
+import json
 
 app = FastAPI()
 
@@ -29,8 +31,16 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.on_event("startup")
 async def startup_event():
-    await init_db(5,3)  # ✅ Ensure DB tables are created at startup
-    print("Initialising all the tables")
+    if os.getenv("ENV", "dev") == "dev":  # ✅ Only run in dev mode
+        print("🚀 Running dev startup tasks...")
+        await init_db()
+        await populate_dummy_data()
+    else:
+        print("✅ Startup without dummy data (non-dev environment).")
+
+@app.get("/")
+async def root():
+    return {"message": "TechRCA API is running"}
 
 # API endpoints
 @app.get("/api/rca-events")
@@ -39,39 +49,55 @@ async def get_rca_events():
         async with async_session() as db:
             result = await db.execute(select(FlowLog))
             events = result.scalars().all()
-            print(events)
-            return [
-                {
-                    "id": e.id,
-                    "srcaddr": e.srcaddr,
-                    "dstaddr": e.dstaddr,
-                    "srcport": e.srcport,
-                    "dstport": e.dstport,
-                    "protocol": e.protocol,
-                    "action": e.action,
-                    "log_status": e.log_status,
-                    "start_time": e.start_time,
-                }
-                for e in events
-            ]
+            # print("📄 Events:", json.dumps([model_to_dict_recursive(r) for r in events]))
+            return [model_to_dict_recursive(r) for r in events]
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/rca-summary")
+async def get_rca_summary():
+    try:
+        async with async_session() as db:
+            # Query grouped counts
+            grouped_result = await db.execute(
+                select(
+                    RCAReports.rca_type,
+                    func.count(RCAReports.id).label("count")
+                )
+                .group_by(RCAReports.rca_type)
+            )
+            grouped_data = [{"label": r[0], "count": r[1]} for r in grouped_result.all()]
+
+            # Query total count
+            total_result = await db.execute(select(func.count(RCAReports.id)))
+            total_count = total_result.scalar()
+
+            return {
+                "total": total_count,
+                "summary": grouped_data
+            }
+
+    except Exception as e:
+        print("Error in /api/rca-summary:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/rca-reports")
 async def get_rca_reports():
     try:
         async with async_session() as db:
-            result = await db.execute(select(RCAReport))
+            result = await db.execute(select(RCAReports))
             reports = result.scalars().all()
-            return {"events": [e.__dict__ for e in reports]}
+            # print("📄 Reports:", json.dumps([model_to_dict_recursive(r) for r in reports]))
+            return [model_to_dict_recursive(r) for r in reports]
     except Exception as e:
+        print(f"Error in /api/rca-reports: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/rca-reports/{report_id}")
 async def get_report_detail(report_id: int):
     try:
         async with async_session() as db:
-            report = await db.get(RCAReport, report_id)
+            report = await db.get(RCAReports, report_id)
             if not report:
                 raise HTTPException(status_code=404, detail="Report not found")
             return {
@@ -83,6 +109,7 @@ async def get_report_detail(report_id: int):
                 "created_at": report.created_at,
             }
     except Exception as e:
+        print(f"Error in /api/rca-reports: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/upload")
@@ -99,6 +126,7 @@ async def upload_file(file: UploadFile = File(...)):
             "analysis": analysis_result
         }
     except Exception as e:
+        print(f"Error in /api/upload: {e}")
         return {"detail": str(e)}
 
 @app.get("/api/dashboard-data")
@@ -137,22 +165,11 @@ async def get_log_summary(limit: int = Query(100, le=1000)):
     try:
         async with async_session() as db:
             result = await db.execute(select(FlowLog))
-            events = result.scalars().all()
-            return [
-                {
-                    "id": e.id,
-                    "srcaddr": e.srcaddr,
-                    "dstaddr": e.dstaddr,
-                    "srcport": e.srcport,
-                    "dstport": e.dstport,
-                    "protocol": e.protocol,
-                    "action": e.action,
-                    "log_status": e.log_status,
-                    "start_time": e.start_time,
-                }
-                for e in events
-            ]
+            flowLogs = result.scalars().all()
+            # print("📄 Flow Logs:", json.dumps([model_to_dict_recursive(r) for r in flowLogs]))
+            return [model_to_dict_recursive(r) for r in flowLogs]
     except Exception as e:
+        print(f"Error in /api/log-summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # @app.post("/api/log-summary", status_code=status.HTTP_201_CREATED)
