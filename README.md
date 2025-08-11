@@ -125,3 +125,10 @@ docker-compose up -d
 ### Killing a container
 sudo systemctl restart docker.socket docker.service
 sudo docker image rm -f $(sudo docker image ls -q)
+
+
+### REstartiing the Docker components for frontend and backend
+```shell
+./restart.sh          # quick restart
+./restart.sh rebuild  # rebuild and restart
+```

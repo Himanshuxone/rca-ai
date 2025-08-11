@@ -13,6 +13,7 @@ import logging
 from db_base import Base
 from models.flow_log import FlowLog
 from models.rca_reports import RCAReports
+from models.rca_events import RCAEvents
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
@@ -57,6 +58,7 @@ async def populate_dummy_data():
         # Check if already populated
         flow_count = (await session.execute(text("SELECT COUNT(*) FROM flow_logs"))).scalar()
         rca_count = (await session.execute(text("SELECT COUNT(*) FROM rca_reports"))).scalar()
+        event_count = (await session.execute(text("SELECT COUNT(*) FROM rca_events"))).scalar()
 
         if flow_count == 0:
             print("📌 Inserting dummy Flow Logs...")
@@ -89,6 +91,164 @@ async def populate_dummy_data():
                     log_status="OK",
                     vpc_id="vpc-0abc123de456fgh75"
                 ),
+                FlowLog(
+                    id=3,
+                    account_id=123456789018,
+                    interface_id="eni-03x4y5z6a7b8c9d0e",
+                    srcaddr="10.0.3.15",
+                    dstaddr="10.0.4.25",
+                    srcport=22,
+                    dstport=22,
+                    protocol=6,
+                    start_time=datetime.utcnow(),
+                    action="ACCEPT",
+                    log_status="OK",
+                    vpc_id="vpc-0xyz987lk654mno32"
+                ),
+                FlowLog(
+                    id=4,
+                    account_id=123456789019,
+                    interface_id="eni-04p5q6r7s8t9u0v1w",
+                    srcaddr="10.0.5.12",
+                    dstaddr="10.0.6.22",
+                    srcport=8080,
+                    dstport=443,
+                    protocol=6,
+                    start_time=datetime.utcnow(),
+                    action="ACCEPT",
+                    log_status="OK",
+                    vpc_id="vpc-0pqr321st654uvw99"
+                ),
+                FlowLog(
+                    id=5,
+                    account_id=123456789020,
+                    interface_id="eni-05a6b7c8d9e0f1g2h",
+                    srcaddr="172.16.0.5",
+                    dstaddr="172.16.1.25",
+                    srcport=53,
+                    dstport=53,
+                    protocol=17,
+                    start_time=datetime.utcnow(),
+                    action="REJECT",
+                    log_status="NODATA",
+                    vpc_id="vpc-0aaa111bbb222ccc33"
+                ),
+                FlowLog(
+                    id=6,
+                    account_id=123456789021,
+                    interface_id="eni-06c7d8e9f0g1h2i3j",
+                    srcaddr="192.168.1.10",
+                    dstaddr="192.168.1.20",
+                    srcport=25,
+                    dstport=25,
+                    protocol=6,
+                    start_time=datetime.utcnow(),
+                    action="REJECT",
+                    log_status="OK",
+                    vpc_id="vpc-0eee444fff555ggg66"
+                ),
+                FlowLog(
+                    id=7,
+                    account_id=123456789022,
+                    interface_id="eni-07h8i9j0k1l2m3n4o",
+                    srcaddr="192.168.2.15",
+                    dstaddr="192.168.3.25",
+                    srcport=123,
+                    dstport=123,
+                    protocol=17,
+                    start_time=datetime.utcnow(),
+                    action="ACCEPT",
+                    log_status="OK",
+                    vpc_id="vpc-0hhh777iii888jjj99"
+                ),
+                FlowLog(
+                    id=8,
+                    account_id=123456789023,
+                    interface_id="eni-08m9n0o1p2q3r4s5t",
+                    srcaddr="10.1.0.15",
+                    dstaddr="10.1.1.25",
+                    srcport=3389,
+                    dstport=3389,
+                    protocol=6,
+                    start_time=datetime.utcnow(),
+                    action="REJECT",
+                    log_status="OK",
+                    vpc_id="vpc-0kkk111lll222mmm33"
+                ),
+                FlowLog(
+                    id=9,
+                    account_id=123456789024,
+                    interface_id="eni-09z1y2x3w4v5u6t7s",
+                    srcaddr="10.2.0.5",
+                    dstaddr="10.2.1.15",
+                    srcport=8081,
+                    dstport=3000,
+                    protocol=6,
+                    start_time=datetime.utcnow(),
+                    action="ACCEPT",
+                    log_status="OK",
+                    vpc_id="vpc-0zzz111yyy222xxx44"
+                ),
+                FlowLog(
+                    id=10,
+                    account_id=123456789025,
+                    interface_id="eni-10a1b2c3d4e5f6g7h",
+                    srcaddr="10.3.2.12",
+                    dstaddr="10.3.3.18",
+                    srcport=1521,
+                    dstport=1521,
+                    protocol=6,
+                    start_time=datetime.utcnow(),
+                    action="REJECT",
+                    log_status="OK",
+                    vpc_id="vpc-0mno111pqr222stu55"
+                )
+            ])
+            print("✅ Inserted dummy FlowLog data.")
+
+        if event_count == 0:
+            print("📌 Inserting dummy events...")
+            session.add_all([
+                RCAEvents(id=1, flow_log_id=1, rca_type="blocked_port", severity="high",
+                        detected_at=datetime(2025, 7, 21, 0, 21, 54, 71300),
+                        summary="Database traffic blocked from app server", status="new",
+                        created_at=datetime(2025, 7, 21, 0, 21, 54, 71300)),
+                RCAEvents(id=2, flow_log_id=2, rca_type="normal_traffic", severity="low",
+                        detected_at=datetime(2025, 7, 21, 0, 21, 54, 71300),
+                        summary="No anomalies detected for this flow", status="resolved",
+                        created_at=datetime(2025, 7, 21, 0, 21, 54, 71300)),
+                RCAEvents(id=3, flow_log_id=3, rca_type="malware_detected", severity="critical",
+                        detected_at=datetime(2025, 7, 22, 10, 15, 0),
+                        summary="Malware signature detected in incoming packet", status="new",
+                        created_at=datetime(2025, 7, 22, 10, 15, 0)),
+                RCAEvents(id=4, flow_log_id=4, rca_type="blocked_port", severity="medium",
+                        detected_at=datetime(2025, 7, 22, 11, 30, 0),
+                        summary="Port 22 blocked from unauthorized IP", status="in_progress",
+                        created_at=datetime(2025, 7, 22, 11, 30, 0)),
+                RCAEvents(id=5, flow_log_id=5, rca_type="latency_issue", severity="high",
+                        detected_at=datetime(2025, 7, 23, 9, 5, 0),
+                        summary="Unusual network latency detected between regions", status="new",
+                        created_at=datetime(2025, 7, 23, 9, 5, 0)),
+                RCAEvents(id=6, flow_log_id=6, rca_type="packet_loss", severity="medium",
+                        detected_at=datetime(2025, 7, 23, 14, 40, 0),
+                        summary="Packet loss detected in internal network segment", status="new",
+                        created_at=datetime(2025, 7, 23, 14, 40, 0)),
+                RCAEvents(id=7, flow_log_id=7, rca_type="normal_traffic", severity="low",
+                        detected_at=datetime(2025, 7, 24, 8, 55, 0),
+                        summary="Traffic patterns normal", status="resolved",
+                        created_at=datetime(2025, 7, 24, 8, 55, 0)),
+                RCAEvents(id=8, flow_log_id=8, rca_type="malware_detected", severity="critical",
+                        detected_at=datetime(2025, 7, 25, 13, 20, 0),
+                        summary="Trojan activity flagged on port 8080", status="in_progress",
+                        created_at=datetime(2025, 7, 25, 13, 20, 0)),
+                RCAEvents(id=9, flow_log_id=9, rca_type="blocked_port", severity="high",
+                        detected_at=datetime(2025, 7, 26, 16, 45, 0),
+                        summary="Port 3306 blocked due to unauthorized access attempt", status="new",
+                        created_at=datetime(2025, 7, 26, 16, 45, 0)),
+                RCAEvents(id=10, flow_log_id=10, rca_type="latency_issue", severity="low",
+                        detected_at=datetime(2025, 7, 27, 7, 15, 0),
+                        summary="Minor latency spike detected during peak hours", status="resolved",
+                        created_at=datetime(2025, 7, 27, 7, 15, 0))
             ])
             print("✅ Inserted dummy FlowLog data.")
 

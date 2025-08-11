@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchLogSummary } from "../services/api";
+import { fetchDashboardData } from "../services/api";
 import { PieChart, Pie, Cell, Tooltip, Legend, Sector, ResponsiveContainer } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
@@ -16,7 +16,7 @@ const PieChartComponent = ({ title }) => {
   useEffect(() => {
     const fetchChartData = async () => {
       try {
-        const result = await fetchLogSummary();
+        const result = await fetchDashboardData();
         const formattedData = [
           { name: "Errors", value: result.summary.errors || 0 },
           { name: "Warnings", value: result.summary.warnings || 0 },

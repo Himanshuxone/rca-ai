@@ -1,13 +1,12 @@
 # File: main.py
 from fastapi import FastAPI, HTTPException, File, UploadFile, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import Column, Integer, String, DateTime, select, Text, func
-from init_db import init_db, async_session, Base, populate_dummy_data  # ✅ Correct import
-from datetime import datetime
-from rca_report_stats import RCAReportStats
+from sqlalchemy import select, func
+from init_db import init_db, async_session, populate_dummy_data  # ✅ Correct import
 from utils.models_utils import model_to_dict_recursive
 from models.flow_log import FlowLog  # ✅ make sure this file contains your SQLAlchemy models
 from models.rca_reports import RCAReports  # ✅ make sure this file contains your SQLAlchemy models
+from models.rca_events import RCAEvents  # ✅ make sure this file contains your SQLAlchemy models
 import os
 import sys
 import shutil
@@ -129,17 +128,52 @@ async def upload_file(file: UploadFile = File(...)):
         print(f"Error in /api/upload: {e}")
         return {"detail": str(e)}
 
+# @app.get("/api/dashboard-data")
+# async def get_dashboard_data():
+#     return {
+#         "summary": {
+#             "total_logs": 14,
+#             "errors": 7,
+#             "warnings": 3,
+#             "info": 4,
+#         },
+#         "top_components": ["API Gateway", "Lambda", "S3"],
+#     }
+
 @app.get("/api/dashboard-data")
 async def get_dashboard_data():
-    return {
-        "summary": {
-            "total_logs": 14,
-            "errors": 7,
-            "warnings": 3,
-            "info": 4,
-        },
-        "top_components": ["API Gateway", "Lambda", "S3"],
-    }
+    try:
+        async with async_session() as db:
+            # Fetch counts grouped by RCA type
+            result = await db.execute(
+                select(RCAEvents.rca_type, func.count(RCAEvents.id))
+                .group_by(RCAEvents.rca_type)
+            )
+            counts = dict(result.all())
+
+            # Map RCA types to categories
+            error_types = ["blocked_port", "malware_detected", "critical_error"]
+            warning_types = ["warning", "suspicious_activity"]
+            info_types = ["normal_traffic", "info"]
+
+            summary = {
+                "total_logs": sum(counts.values()),
+                "errors": sum(counts.get(t, 0) for t in error_types),
+                "warnings": sum(counts.get(t, 0) for t in warning_types),
+                "info": sum(counts.get(t, 0) for t in info_types),
+            }
+
+            # Example top components - can be fetched dynamically later
+            top_components = ["API Gateway", "Lambda", "S3"]
+
+            return {
+                "summary": summary,
+                "top_components": top_components,
+            }
+
+    except Exception as e:
+        print(f"Error in /api/rca-summary: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 def analyze_log_file(filepath):
     result = {
